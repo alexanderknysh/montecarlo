@@ -7,9 +7,9 @@
 #include <time.h>
 #include "random.h"
 
-void random_seed(void)
+void random_seed(int rank)
 {
-  srand((int) time(NULL));
+  srand(time(NULL) + rank);
 }
 
 double random_real(double low, double high)
@@ -35,16 +35,19 @@ main(int argc, char **argv)
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   MPI_Comm_size(MPI_COMM_WORLD, &size);
   
-  random_seed();
+  random_seed(rank);
 
   int n = 1000;
   
   double x0 = 0, x1 = 1, y0 = 0, y1 = 1;
   double dx = (x1 - x0) / size;
 
-  int xb = x0 + dx * rank;
-  int xe = x0 + dx * (rank + 1);
-
+  double xb = x0 + dx * rank;
+  double xe = x0 + dx * (rank + 1);
+  
+  mprintf("XB = %g\n", xb);
+  mprintf("XE = %g\n", xe);
+  
   double xmin = random_real(xb, xe);
   double ymin = random_real(y0, y1);
   double fmin = f(xmin, ymin);
