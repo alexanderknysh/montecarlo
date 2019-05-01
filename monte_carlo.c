@@ -34,22 +34,17 @@ main(int argc, char **argv)
   
   random_seed(rank);
   
-  double x0 = 0, x1 = 1, y0 = 0, y1 = 1;
+  double x0 = -1, x1 = 1, y0 = -1, y1 = 1;
   double dx = (x1 - x0) / size;
-
   double xb = x0 + dx * rank;
   double xe = xb + dx;
-  
-  mprintf("XB = %g\n", xb);
-  mprintf("XE = %g\n", xe);
   
   double xmin = random_real(xb, xe);
   double ymin = random_real(y0, y1);
   double fmin = f(xmin, ymin);
   double xcur, ycur;
 
-  mprintf("per-proc xmin, ymin, fmin are %g , %g, %g\n", xmin, ymin, fmin);
-  for (int i = 1; i < n; i++) {
+  for (int i = 1; i < n/size; i++) {
     xcur = random_real(xb,xe);
     ycur = random_real(y0,y1);
     if (f(xcur,ycur) < f(xmin,ymin)) {
@@ -58,13 +53,20 @@ main(int argc, char **argv)
       fmin = f(xcur,ycur);
     }
   }
-  mprintf("per-proc xmin, ymin, fmin are %g , %g, %g\n", xmin, ymin, fmin);
+  mprintf("Local minimum out of %d points: f(%g, %g) = %g\n", n/size, xmin, ymin, fmin);
+ 
+  struct {
+    double minvalue;
+    int    minrank;
+  } local, global; 
+ 
+  local.minvalue = fmin;
+  local.minrank = rank;
 
-  double global_fmin;
-  MPI_Reduce(&fmin, &global_fmin, 1, MPI_DOUBLE, MPI_MIN, 0, MPI_COMM_WORLD);
+  MPI_Reduce(&local, &global, 1, MPI_DOUBLE_INT, MPI_MINLOC, 0, MPI_COMM_WORLD);
   
   if (rank == 0) {
-    mprintf("The global minimum is %g\n", global_fmin);
+    mprintf("Global minimum: %g Corresponding process: %d\n", global.minvalue, global.minrank);
   }
 
   MPI_Finalize();
