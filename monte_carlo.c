@@ -54,7 +54,7 @@ main(int argc, char **argv)
     }
   }
   mprintf("Local minimum out of %d points: f(%g, %g) = %g\n", n/size, xmin, ymin, fmin);
- 
+
   struct {
     double minvalue;
     int    minrank;
@@ -63,12 +63,25 @@ main(int argc, char **argv)
   local.minvalue = fmin;
   local.minrank = rank;
 
-  MPI_Reduce(&local, &global, 1, MPI_DOUBLE_INT, MPI_MINLOC, 0, MPI_COMM_WORLD);
+  MPI_Allreduce(&local, &global, 1, MPI_DOUBLE_INT, MPI_MINLOC, MPI_COMM_WORLD);
+  
+  if (rank == global.minrank) {
+    MPI_Send(&xmin, 1, MPI_DOUBLE, 0, 1, MPI_COMM_WORLD);
+    MPI_Send(&ymin, 1, MPI_DOUBLE, 0, 2, MPI_COMM_WORLD); 
+  }
+  else if (rank == 0) {
+    MPI_Recv(&xmin, 1, MPI_DOUBLE, global.minrank, 1, MPI_COMM_WORLD,
+             MPI_STATUS_IGNORE);
+    MPI_Recv(&ymin, 1, MPI_DOUBLE, global.minrank, 2, MPI_COMM_WORLD,
+             MPI_STATUS_IGNORE);
+  }
+  
+  MPI_Barrier(MPI_COMM_WORLD);
   
   if (rank == 0) {
-    mprintf("Global minimum: %g Corresponding process: %d\n", global.minvalue, global.minrank);
+    printf("\nGlobal minimum out of %d points: f(%g, %g) = %g\n", n, xmin, ymin, global.minvalue);
   }
-
+  
   MPI_Finalize();
   return 0;
 }
