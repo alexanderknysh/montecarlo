@@ -16,6 +16,7 @@ main(int argc, char **argv)
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   MPI_Comm_size(MPI_COMM_WORLD, &size);
   
+  // Check if input total number of points is correct.
   int n = atoi(argv[1]);
   double n_double = atof(argv[1]);
 
@@ -32,58 +33,67 @@ main(int argc, char **argv)
     exit(1);
   }
   
+  // Seed the random number generator.
   random_seed(rank);
   
-  double x0 = -1, x1 = 1, y0 = -1, y1 = 1;
+  // Initialize global and local boundaries.
+  double x0 = 0, x1 = 1, y0 = 0, y1 = 1;
   double dx = (x1 - x0) / size;
   double xb = x0 + dx * rank;
   double xe = xb + dx;
   
-  double xmin = random_real(xb, xe);
-  double ymin = random_real(y0, y1);
-  double fmin = f(xmin, ymin);
-  double xcur, ycur;
+  // This structure keeps following local/global values:
+  //
+  //   fmin - local/global minimum function value;
+  //   rmin - corresponding MPI process nubmer;
+  //   xmin - corresponding X coordinate;
+  //   ymin - corresponding Y coordinate.  
+  struct {
+    double fmin;
+    int    rmin;
+    double xmin;
+    double ymin;
+  } local, global;
+  
+  // Initialize local values.
+  local.rmin = rank;
+  local.xmin = random_real(xb, xe);
+  local.ymin = random_real(y0, y1);
+  local.fmin = f(local.xmin, local.ymin);
 
+  // Find and reassign local minimum values. Print result.
   for (int i = 1; i < n/size; i++) {
-    xcur = random_real(xb,xe);
-    ycur = random_real(y0,y1);
-    if (f(xcur,ycur) < f(xmin,ymin)) {
-      xmin = xcur;
-      ymin = ycur;
-      fmin = f(xcur,ycur);
+    double xcur = random_real(xb,xe);
+    double ycur = random_real(y0,y1);
+    if (f(xcur,ycur) < f(local.xmin,local.ymin)) {
+      local.xmin = xcur;
+      local.ymin = ycur;
+      local.fmin = f(xcur,ycur);
     }
   }
   mprintf("Local minimum out of %d points: f(%10.4g, %10.4g) = %10.4g\n",
-                                                 n/size, xmin, ymin, fmin);
+                               n/size, local.xmin, local.ymin, local.fmin);
 
-  struct {
-    double minvalue;
-    int    minrank;
-    double minx;
-    double miny;
-  } local, global; 
- 
-  local.minvalue = fmin;
-  local.minrank = rank;
-
+  // Find global minimum from the local ones. Save corresponding MPI process rank.
   MPI_Allreduce(&local, &global, 1, MPI_DOUBLE_INT, MPI_MINLOC, MPI_COMM_WORLD);
   
-  if (rank == global.minrank) {
-    MPI_Send(&xmin, 1, MPI_DOUBLE, 0, 1, MPI_COMM_WORLD);
-    MPI_Send(&ymin, 1, MPI_DOUBLE, 0, 2, MPI_COMM_WORLD); 
+  // Send global minimum data to the first (0) MPI process.
+  if (rank == global.rmin) {
+    MPI_Bsend(&local.xmin, 1, MPI_DOUBLE, 0, 1, MPI_COMM_WORLD);
+    MPI_Bsend(&local.ymin, 1, MPI_DOUBLE, 0, 2, MPI_COMM_WORLD);
   }
   else if (rank == 0) {
-    MPI_Recv(&global.minx, 1, MPI_DOUBLE, global.minrank, 1, MPI_COMM_WORLD,
-             MPI_STATUS_IGNORE);
-    MPI_Recv(&global.miny, 1, MPI_DOUBLE, global.minrank, 2, MPI_COMM_WORLD,
-             MPI_STATUS_IGNORE);
+    MPI_Recv(&global.xmin, 1, MPI_DOUBLE, global.rmin, 1, MPI_COMM_WORLD,
+              MPI_STATUS_IGNORE);
+    MPI_Recv(&global.ymin, 1, MPI_DOUBLE, global.rmin, 2, MPI_COMM_WORLD,
+              MPI_STATUS_IGNORE);
   }
   
-  // MPI_Barrier(MPI_COMM_WORLD);
-  
+  // Wait for all processes and print final result.
+  MPI_Barrier(MPI_COMM_WORLD);
   if (rank == 0) {
     printf("\n(%d) Global minimum out of %d points: f(%10.4g, %10.4g) = %10.4g\n\n", 
-                        global.minrank, n, global.minx, global.miny, global.minvalue);
+                               global.rmin, n, global.xmin, global.ymin, global.fmin);
   }
   
   MPI_Finalize();
