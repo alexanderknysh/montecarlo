@@ -53,11 +53,14 @@ main(int argc, char **argv)
       fmin = f(xcur,ycur);
     }
   }
-  mprintf("Local minimum out of %d points: f(%g, %g) = %g\n", n/size, xmin, ymin, fmin);
+  mprintf("Local minimum out of %d points: f(%10.4g, %10.4g) = %10.4g\n",
+                                                 n/size, xmin, ymin, fmin);
 
   struct {
     double minvalue;
     int    minrank;
+    double minx;
+    double miny;
   } local, global; 
  
   local.minvalue = fmin;
@@ -70,16 +73,17 @@ main(int argc, char **argv)
     MPI_Send(&ymin, 1, MPI_DOUBLE, 0, 2, MPI_COMM_WORLD); 
   }
   else if (rank == 0) {
-    MPI_Recv(&xmin, 1, MPI_DOUBLE, global.minrank, 1, MPI_COMM_WORLD,
+    MPI_Recv(&global.minx, 1, MPI_DOUBLE, global.minrank, 1, MPI_COMM_WORLD,
              MPI_STATUS_IGNORE);
-    MPI_Recv(&ymin, 1, MPI_DOUBLE, global.minrank, 2, MPI_COMM_WORLD,
+    MPI_Recv(&global.miny, 1, MPI_DOUBLE, global.minrank, 2, MPI_COMM_WORLD,
              MPI_STATUS_IGNORE);
   }
   
-  MPI_Barrier(MPI_COMM_WORLD);
+  // MPI_Barrier(MPI_COMM_WORLD);
   
   if (rank == 0) {
-    printf("\nGlobal minimum out of %d points: f(%g, %g) = %g\n", n, xmin, ymin, global.minvalue);
+    printf("\n(%d) Global minimum out of %d points: f(%10.4g, %10.4g) = %10.4g\n\n", 
+                        global.minrank, n, global.minx, global.miny, global.minvalue);
   }
   
   MPI_Finalize();
