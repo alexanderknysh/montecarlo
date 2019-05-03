@@ -44,10 +44,10 @@ main(int argc, char **argv)
   
   // This structure keeps following local/global values:
   //
-  //   fmin - local/global minimum function value;
-  //   rmin - corresponding MPI process nubmer;
-  //   xmin - corresponding X coordinate;
-  //   ymin - corresponding Y coordinate.  
+  // fmin - local/global minimum function value;
+  // rmin - corresponding MPI process nubmer;
+  // xmin - corresponding X coordinate;
+  // ymin - corresponding Y coordinate.  
   struct {
     double fmin;
     int    rmin;
@@ -79,20 +79,21 @@ main(int argc, char **argv)
   
   // Send global minimum data to the first (0) MPI process.
   if (rank == global.rmin) {
-    MPI_Bsend(&local.xmin, 1, MPI_DOUBLE, 0, 1, MPI_COMM_WORLD);
-    MPI_Bsend(&local.ymin, 1, MPI_DOUBLE, 0, 2, MPI_COMM_WORLD);
+    MPI_Send(&local.xmin, 1, MPI_DOUBLE, 0, 1, MPI_COMM_WORLD);
+    MPI_Send(&local.ymin, 1, MPI_DOUBLE, 0, 2, MPI_COMM_WORLD);
   }
-  else if (rank == 0) {
+
+  if (rank == 0) {
     MPI_Recv(&global.xmin, 1, MPI_DOUBLE, global.rmin, 1, MPI_COMM_WORLD,
               MPI_STATUS_IGNORE);
     MPI_Recv(&global.ymin, 1, MPI_DOUBLE, global.rmin, 2, MPI_COMM_WORLD,
               MPI_STATUS_IGNORE);
   }
-  
+
   // Wait for all processes and print final result.
   MPI_Barrier(MPI_COMM_WORLD);
   if (rank == 0) {
-    printf("\n(%d) Global minimum out of %d points: f(%10.4g, %10.4g) = %10.4g\n\n", 
+    printf("\n[%d] Global minimum out of %d points: f(%10.4g, %10.4g) = %10.4g\n\n", 
                                global.rmin, n, global.xmin, global.ymin, global.fmin);
   }
   
