@@ -9,9 +9,9 @@
 
 // Endpoints of the domain intervals.
 double X0 = -1,
-              X1 =  1,
-              Y0 = -1,
-              Y1 =  1;
+       X1 =  1,
+       Y0 = -1,
+       Y1 =  1;
 
 // Given function.
 double f(double x, double y)
@@ -35,3 +35,4 @@ double random_real(double low, double high)
 }
 
 #endif
+
