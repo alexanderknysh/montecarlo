@@ -14,11 +14,11 @@ with Monte Carlo method is presented. The MPI parallelization is implemented by 
 
 ## Numerical approach
 
-The numerical approach is relatively simple and straightforward. First of all, we divide our rectangular domain along X-axis by several subdomains that correspond a particular MPI process (Fig.1). Every MPI process generate its own random X- and Y-coordinates and calculate function at this point. Then, obtained value of function is compared the already assigned initial minimum which is value of function at random point too. The procedure repeats finite number of times prescribed by user. At this stage we have "local" minimums from each subdomain with corresponding coordinates, so the only thing left is to extract the global minimum through MPI processes communication.
+The numerical approach is relatively simple and straightforward. First of all, we divide our rectangular domain along X-axis by several subdomains that correspond a particular MPI process (Fig. 1). Every MPI process generate its own random X- and Y-coordinates and calculate function at this point. Then, obtained value of function is compared the already assigned initial minimum which is value of function at random point too. The procedure repeats finite number of times prescribed by user. At this stage we have "local" minimums from each subdomain with corresponding coordinates, so the only thing left is to extract the global minimum through MPI processes communication.
 
 ![Problem's domain decomposition with MPI.](https://user-images.githubusercontent.com/46943028/57386810-24966000-7183-11e9-9651-8fad0e178cf2.PNG)
 
-Figure 1. Problem's domain decomposition with MPI.
+*Figure 1. Problem's domain decomposition with MPI.*
 
 ## Description of the code
 
@@ -230,9 +230,9 @@ This will run code with 8 processes and 16000 points for the whole domain, so it
 
 ## Results
 
-Let us first run the sample code included in repository on *fishercat.sr.unh.edu*. The chosen function and domain (Fig.2) are
+Let us first run the sample code included in repository on *fishercat.sr.unh.edu*. The chosen function and domain (Fig. 2) are
 
-<a href="https://www.codecogs.com/eqnedit.php?latex=f\left&space;(&space;x,y&space;\right&space;)=x^2&plus;y^2,&space;\quad&space;x&space;\in&space;\left&space;[&space;-1,&space;-1&space;\right&space;],&space;\quad&space;y&space;\in&space;\left&space;[&space;-1,&space;1&space;\right&space;]," target="_blank"><img src="https://latex.codecogs.com/gif.latex?f\left&space;(&space;x,y&space;\right&space;)=x^2&plus;y^2,&space;\quad&space;x&space;\in&space;\left&space;[&space;-1,&space;-1&space;\right&space;],&space;\quad&space;y&space;\in&space;\left&space;[&space;-1,&space;1&space;\right&space;]," title="f\left ( x,y \right )=x^2+y^2, \quad x \in \left [ -1, -1 \right ], \quad y \in \left [ -1, 1 \right ]," /></a>
+<a href="https://www.codecogs.com/eqnedit.php?latex=f\left&space;(&space;x,y&space;\right&space;)=x^2&plus;y^2,&space;\quad&space;x&space;\in&space;\left&space;[&space;-1,&space;1&space;\right&space;],&space;\quad&space;y&space;\in&space;\left&space;[&space;-1,&space;1&space;\right&space;]," target="_blank"><img src="https://latex.codecogs.com/gif.latex?f\left&space;(&space;x,y&space;\right&space;)=x^2&plus;y^2,&space;\quad&space;x&space;\in&space;\left&space;[&space;-1,&space;1&space;\right&space;],&space;\quad&space;y&space;\in&space;\left&space;[&space;-1,&space;1&space;\right&space;]," title="f\left ( x,y \right )=x^2+y^2, \quad x \in \left [ -1, 1 \right ], \quad y \in \left [ -1, 1 \right ]," /></a>
 
 and the output for 8,000,000 points is:
 ```
@@ -254,9 +254,9 @@ It is obvious that minimum function value is 0 at (0,0) point and either `[3]`<s
 
 ![x^2 + y^2](https://user-images.githubusercontent.com/46943028/57400548-b9a85180-71a1-11e9-8411-b9c29c660e4d.PNG)
 
-Figure 2. Plot of sample function.
+*Figure 2. Plot of sample function.*
 
-Change function and domain (Fig.3) to
+Change function and domain (Fig. 3) to
 
 <a href="https://www.codecogs.com/eqnedit.php?latex=f\left&space;(&space;x,y&space;\right&space;)=0.1x^2y&space;\enskip&space;sin\left&space;(&space;xy&space;\right&space;),&space;\quad&space;x&space;\in&space;\left&space;[&space;1,&space;2&space;\right&space;],&space;\quad&space;y&space;\in&space;\left&space;[&space;-3,&space;-2&space;\right&space;]," target="_blank"><img src="https://latex.codecogs.com/gif.latex?f\left&space;(&space;x,y&space;\right&space;)=0.1x^2y&space;\enskip&space;sin\left&space;(&space;xy&space;\right&space;),&space;\quad&space;x&space;\in&space;\left&space;[&space;1,&space;2&space;\right&space;],&space;\quad&space;y&space;\in&space;\left&space;[&space;-3,&space;-2&space;\right&space;]," title="f\left ( x,y \right )=0.1x^2y \enskip sin\left ( xy \right ), \quad x \in \left [ 1, 2 \right ], \quad y \in \left [ -3, -2 \right ]," /></a>
 
@@ -278,8 +278,20 @@ and run for 60,000,000 points
 
 ![0.1 x^2 y Sin(xy)](https://user-images.githubusercontent.com/46943028/57400734-291e4100-71a2-11e9-912c-f15e148d3a85.PNG)
 
-Figure 3. Plot of the changed function.
+*Figure 3. Plot of the changed function.*
 
 The real minimum of the function is around -0.962892 at (2, -2.4566) and expected to be found by `[5]`<sup>th</sup> process. This is exactly what we get.
 
 ## Parallelization
+
+**Strong scaling**
+
+For the strong scaling test we choose the changed function and domain again
+
+<a href="https://www.codecogs.com/eqnedit.php?latex=f\left&space;(&space;x,y&space;\right&space;)=0.1x^2y&space;\enskip&space;sin\left&space;(&space;xy&space;\right&space;),&space;\quad&space;x&space;\in&space;\left&space;[&space;1,&space;2&space;\right&space;],&space;\quad&space;y&space;\in&space;\left&space;[&space;-3,&space;-2&space;\right&space;]," target="_blank"><img src="https://latex.codecogs.com/gif.latex?f\left&space;(&space;x,y&space;\right&space;)=0.1x^2y&space;\enskip&space;sin\left&space;(&space;xy&space;\right&space;),&space;\quad&space;x&space;\in&space;\left&space;[&space;1,&space;2&space;\right&space;],&space;\quad&space;y&space;\in&space;\left&space;[&space;-3,&space;-2&space;\right&space;]," title="f\left ( x,y \right )=0.1x^2y \enskip sin\left ( xy \right ), \quad x \in \left [ 1, 2 \right ], \quad y \in \left [ -3, -2 \right ]," /></a>
+
+and run it on 1,2,...,8 processes and 84,000,000 points (Fig. 4).
+
+![Strong scaling](https://user-images.githubusercontent.com/46943028/57406229-3e00d180-71ae-11e9-8f60-e78c03740142.PNG)
+
+*Figure 4. Results of the strong scaling test. Dashed line represents perfect scaling, black points represent actual timings.*
