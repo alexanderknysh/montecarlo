@@ -284,8 +284,6 @@ The real minimum of the function is around -0.962892 at (2, -2.4566) and expecte
 
 ## Parallelization
 
-**Strong scaling**
-
 For the strong scaling test we choose the changed function and domain again
 
 <a href="https://www.codecogs.com/eqnedit.php?latex=f\left&space;(&space;x,y&space;\right&space;)=0.1x^2y&space;\enskip&space;sin\left&space;(&space;xy&space;\right&space;),&space;\quad&space;x&space;\in&space;\left&space;[&space;1,&space;2&space;\right&space;],&space;\quad&space;y&space;\in&space;\left&space;[&space;-3,&space;-2&space;\right&space;]," target="_blank"><img src="https://latex.codecogs.com/gif.latex?f\left&space;(&space;x,y&space;\right&space;)=0.1x^2y&space;\enskip&space;sin\left&space;(&space;xy&space;\right&space;),&space;\quad&space;x&space;\in&space;\left&space;[&space;1,&space;2&space;\right&space;],&space;\quad&space;y&space;\in&space;\left&space;[&space;-3,&space;-2&space;\right&space;]," title="f\left ( x,y \right )=0.1x^2y \enskip sin\left ( xy \right ), \quad x \in \left [ 1, 2 \right ], \quad y \in \left [ -3, -2 \right ]," /></a>
@@ -295,3 +293,10 @@ and run it on 1,2,...,8 processes and 84,000,000 points (Fig. 4).
 ![Strong scaling](https://user-images.githubusercontent.com/46943028/57406229-3e00d180-71ae-11e9-8f60-e78c03740142.PNG)
 
 *Figure 4. Results of the strong scaling test. Dashed line represents perfect scaling, black points represent actual timings.*
+
+For the weak scaling the number of points is proportional to the number of processes involved. In the perfect situation we will get a straight horizontal line, but in reality there is a slight deviation (Fig. 5).
+
+![Weak scaling](https://user-images.githubusercontent.com/46943028/57408566-f3825380-71b3-11e9-8fe5-654aac1671bd.PNG)
+
+*Figure 4. Results of the weak scaling test.*
+
