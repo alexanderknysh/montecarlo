@@ -4,7 +4,7 @@ Alexander Knysh, [github repository](https://github.com/alexanderknysh/hpc-final
 
 ## Introduction
 
-Solving of so-called optimization problems usually requires finding minimum or maximum (generally speaking - extremum) of a specific function of one, two and more independent variables. Sometimes, it is mathematically challenging or even impossible to find neither local nor global extremums of the function analytically. In these cases, we use numerical techniques such as Newton's method, gradient descent, bi- and golden-section searches, etc. Unfortunately, they might be not only computationally expensive but have a hard time finding global extremum. Under such circumstances methods like [Monte Carlo method](https://en.wikipedia.org/wiki/Monte_Carlo_method) can be very useful and efficient, since it is based on different principles.
+Solving of the so-called optimization problems usually requires finding minimum or maximum (generally speaking - extremum) of a specific function of one, two or more independent variables. Sometimes, it is mathematically challenging or even impossible to find neither local nor global extremums of the function analytically. In these cases, we use numerical techniques such as Newton's method, gradient descent, bi- and golden-section searches, etc. Unfortunately, they might be not only computationally expensive but have a hard time finding global extremum. Under such circumstances methods like [Monte Carlo method](https://en.wikipedia.org/wiki/Monte_Carlo_method) can be very useful and efficient, since it is based on different principles.
 
 In this project the C program for finding global minimum of a given real function
 
@@ -14,11 +14,11 @@ with Monte Carlo method is presented. The MPI parallelization is implemented by 
 
 ## Numerical approach
 
-The numerical approach is relatively simple and straightforward. First of all, we divide our rectangular domain along X-axis by several subdomains that correspond a particular MPI process (Fig. 1). Every MPI process generate its own random X- and Y-coordinates and calculate function at this point. Then, obtained value of function is compared the already assigned initial minimum which is value of function at random point too. The procedure repeats finite number of times prescribed by user. At this stage we have "local" minimums from each subdomain with corresponding coordinates, so the only thing left is to extract the global minimum through MPI processes communication.
+The numerical approach is relatively simple and straightforward. First of all, we divide our rectangular domain along X-axis by several subdomains that correspond a particular MPI process (Fig. 1). Every MPI process generate its own random X- and Y-coordinates and calculate function at this point. Then, obtained value of function is compared to the already assigned initial minimum which is value of function at random point too. The procedure repeats finite number of times prescribed by user. Having the "local" minimums from each subdomain with corresponding coordinates, we can easily extract the global minimum through the communications between MPI processes.
 
 ![Problem's domain decomposition with MPI.](https://user-images.githubusercontent.com/46943028/57386810-24966000-7183-11e9-9651-8fad0e178cf2.PNG)
 
-*Figure 1. Problem's domain decomposition with MPI.*
+*Figure 1. Domain decomposition with MPI.*
 
 ## Description of the code
 
@@ -26,7 +26,7 @@ There are three files included in repository: header *random.h* that includes gl
 
 [**random.h**](https://github.com/alexanderknysh/hpc-final-project/blob/master/random.h)
 
-In the header file you can find not only familiar `mprintf()` and `MHERE` structures but also the function to be analized and domain parameters. Parameter's type is `double` but `extern const double` could be a good style too. Capitalization in variable names is chosen due to reserved `y0()` and `y1()` functions of *math.h*.  
+In the header file you can find not only familiar `mprintf()` and `MHERE` structures but also the function to be analized and domain parameters. Parameter's type is `double` but `extern const double` could be a good programming practice too. Capitalization in variable names is forced due to reserved `y0()` and `y1()` functions of *math.h*.  
 ```c
 #ifndef MPI_DEBUG_H
 #define MPI_DEBUG_H
@@ -48,7 +48,7 @@ double f(double x, double y)
   return x*x+y*y;
 }
 ```
-The `random_seed()` function seeds the random number generator with the current time and rank (MPI process number). It should be called once prior to calling any other random number function. Note that this function must depend on rank in some way, otherwise all processes generate the same random numbers.
+The `random_seed()` function seeds the random number generator with the current time and rank (MPI process number). It should be called once prior to calling any other random number function. Note that this function must depend on rank in some way, otherwise all processes will generate the same random numbers.
 ```c
 // Seeds random based on time and rank.
 void random_seed(int rank)
@@ -56,7 +56,7 @@ void random_seed(int rank)
   srand(time(NULL) + rank);
 }
 ```
-Finally, the `random_real()` returns a random (better to say preudorandom) real number between `low` and `high`, inclusive.
+Finally, the `random_real()` returns a random (preudorandom, to be exact) real number between `low` and `high`, inclusive.
 ```c
 // Create random real from [low, high] interval.
 double random_real(double low, double high)
@@ -112,7 +112,7 @@ In order to correctly identify execution time, `MPI_Barrier(MPI_COMM_WORLD)` is 
     exit(1);
   }
 ```
-For example, if the input is `mpirun -n 8 16000` where 16000 is the total number of points no error will be shown and each subdomain will test 2000 random points. However, if number of points is of wrong type, not chosen, not positive, not integer or not divisible by number of processes we will get an error.
+For example, if the input is `mpirun -n 8 16000`, where 16000 is the total number of points, no error will be shown and each subdomain will test 2000 random points. However, if number of points is not chosen, not positive, not integer or not divisible by number of processes, we will get an error.
 
 Now we can seed random number generator and assign our local `local.fmin`, `local.rmin`, `local.xmin`, `local.ymin` variables:
 ```c
@@ -143,7 +143,7 @@ Now we can seed random number generator and assign our local `local.fmin`, `loca
   local.ymin = random_real(Y0, Y1);
   local.fmin = f(local.xmin, local.ymin);
 ```
-The reason behind using of `struct` will be shown a bit later, so now we just go through the prescribed number of points, find local minimum and print it with all corresponding parameters:
+The reason behind using of `struct` is that it is quite convenient to way to put data in `Allreduce()` which will be showm later. So now we just go through the prescribed number of points, find local minimum and print it with all corresponding parameters:
 ```c
   // Find and reassign local minimum values. Print result.
   for (int i = 1; i < n/size; i++) {
@@ -256,11 +256,11 @@ It is obvious that minimum function value is 0 at (0,0) point and either `[3]`<s
 
 *Figure 2. Plot of sample function.*
 
-Change function and domain (Fig. 3) to
+The reported solution is correct. Now we change function and domain (Fig. 3) to
 
 <a href="https://www.codecogs.com/eqnedit.php?latex=f\left&space;(&space;x,y&space;\right&space;)=0.1x^2y&space;\enskip&space;sin\left&space;(&space;xy&space;\right&space;),&space;\quad&space;x&space;\in&space;\left&space;[&space;1,&space;2&space;\right&space;],&space;\quad&space;y&space;\in&space;\left&space;[&space;-3,&space;-2&space;\right&space;]," target="_blank"><img src="https://latex.codecogs.com/gif.latex?f\left&space;(&space;x,y&space;\right&space;)=0.1x^2y&space;\enskip&space;sin\left&space;(&space;xy&space;\right&space;),&space;\quad&space;x&space;\in&space;\left&space;[&space;1,&space;2&space;\right&space;],&space;\quad&space;y&space;\in&space;\left&space;[&space;-3,&space;-2&space;\right&space;]," title="f\left ( x,y \right )=0.1x^2y \enskip sin\left ( xy \right ), \quad x \in \left [ 1, 2 \right ], \quad y \in \left [ -3, -2 \right ]," /></a>
 
-and run for 60,000,000 points
+and run program for 60,000,000 points
 ```
 [aknysh@fishercat build]$ mpirun -n 6 ./monte_carlo 60000000
 [0] Local minimum at X ϵ [1, 1.16667], Y ϵ [-3, -2] among 10000000 points:  F(1.16666, -2.99986) = -0.143159
@@ -298,5 +298,5 @@ For the weak scaling the number of points is proportional to the number of proce
 
 ![Weak scaling](https://user-images.githubusercontent.com/46943028/57408566-f3825380-71b3-11e9-8fe5-654aac1671bd.PNG)
 
-*Figure 4. Results of the weak scaling test.*
+*Figure 5. Results of the weak scaling test.*
 
