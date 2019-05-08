@@ -10,11 +10,15 @@ In this project the C program for finding global minimum of a given real functio
 
 <a href="https://www.codecogs.com/eqnedit.php?latex=f\left&space;(&space;x,y&space;\right&space;),&space;\quad&space;x&space;\in&space;\left&space;[&space;x_0,&space;x_1&space;\right&space;],&space;\quad&space;y&space;\in&space;\left&space;[&space;y_0,&space;y_1&space;\right&space;]" target="_blank"><img src="https://latex.codecogs.com/gif.latex?f\left&space;(&space;x,y&space;\right&space;),&space;\quad&space;x&space;\in&space;\left&space;[&space;x_0,&space;x_1&space;\right&space;],&space;\quad&space;y&space;\in&space;\left&space;[&space;y_0,&space;y_1&space;\right&space;]" title="f\left ( x,y \right ), \quad x \in \left [ x_0, x_1 \right ], \quad y \in \left [ y_0, y_1 \right ]" /></a>
 
-with Monte Carlo method is presented. The MPI parallelization is implemented by [domain decomposition](https://github.com/unh-hpc-2019/class/wiki/Class-20#domain-decomposition-1). The input data are the function itself and its domain parameters, while the output data are the global minimum of the function with corresponding coordinates. Note that the global maximum could be easily find by changing the sign of the function.   
+with Monte Carlo method is presented. The MPI parallelization is implemented by [domain decomposition](https://github.com/unh-hpc-2019/class/wiki/Class-20#domain-decomposition-1). The input data are the function itself, its domain parameters and total number of points checked, while the output data are the global minimum of the function with corresponding coordinates. Note that the global maximum could be easily found by changing the sign of the function.   
 
 ## Numerical approach
 
+The numerical approach is relatively simple and straightforward. First of all, we divide our rectangular domain along X-axis by several subdomains that correspond a particular MPI process, see Figure 1. Every MPI process generate its own random X- and Y-coordinates and calculate function at this point. Then, obtained value of function is compared the already assigned initial minimum which is value of function at random point too. The procedure repeats finite number of times prescribed by user. At this stage we have "local" minimums from each subdomain with corresponding coordinates, so the only thing left is to extract the global minimum through MPI processes communication.
 
+![Problem's domain decomposition with MPI.](https://user-images.githubusercontent.com/46943028/57386810-24966000-7183-11e9-9651-8fad0e178cf2.PNG)
+
+Figure 1. Problem's domain decomposition with MPI.
 
 ## Description of the code
 
