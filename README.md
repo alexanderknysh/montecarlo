@@ -14,7 +14,7 @@ with Monte Carlo method is presented. The MPI parallelization is implemented by 
 
 ## Numerical approach
 
-The numerical approach is relatively simple and straightforward. First of all, we divide our rectangular domain along X-axis by several subdomains that correspond a particular MPI process, see Figure 1. Every MPI process generate its own random X- and Y-coordinates and calculate function at this point. Then, obtained value of function is compared the already assigned initial minimum which is value of function at random point too. The procedure repeats finite number of times prescribed by user. At this stage we have "local" minimums from each subdomain with corresponding coordinates, so the only thing left is to extract the global minimum through MPI processes communication.
+The numerical approach is relatively simple and straightforward. First of all, we divide our rectangular domain along X-axis by several subdomains that correspond a particular MPI process (Fig.1). Every MPI process generate its own random X- and Y-coordinates and calculate function at this point. Then, obtained value of function is compared the already assigned initial minimum which is value of function at random point too. The procedure repeats finite number of times prescribed by user. At this stage we have "local" minimums from each subdomain with corresponding coordinates, so the only thing left is to extract the global minimum through MPI processes communication.
 
 ![Problem's domain decomposition with MPI.](https://user-images.githubusercontent.com/46943028/57386810-24966000-7183-11e9-9651-8fad0e178cf2.PNG)
 
@@ -218,6 +218,68 @@ target_link_libraries(monte_carlo PUBLIC MPI::MPI_C)
 
 ## How to run
 
+Make sure that MPI is supported by the compiler you use. In order to run code clone project repository, go in project folder and then build, compile and run:
+```
+$ git clone git@github.com:alexanderknysh/hpc-final-project.git
+$ cd hpc-final-project
+$ cmake .
+$ make
+$ mpirun -n 8 ./monte_carlo 16000
+```
+This will run code with 8 processes and 16000 points for the whole domain, so it is going to be 2000 points per process.
+
 ## Results
+
+Let us first run the sample code included in repository on *fishercat.sr.unh.edu*. The chosen function and domain (Fig.2) are
+
+<a href="https://www.codecogs.com/eqnedit.php?latex=f\left&space;(&space;x,y&space;\right&space;)=x^2&plus;y^2,&space;\quad&space;x&space;\in&space;\left&space;[&space;-1,&space;-1&space;\right&space;],&space;\quad&space;y&space;\in&space;\left&space;[&space;-1,&space;1&space;\right&space;]," target="_blank"><img src="https://latex.codecogs.com/gif.latex?f\left&space;(&space;x,y&space;\right&space;)=x^2&plus;y^2,&space;\quad&space;x&space;\in&space;\left&space;[&space;-1,&space;-1&space;\right&space;],&space;\quad&space;y&space;\in&space;\left&space;[&space;-1,&space;1&space;\right&space;]," title="f\left ( x,y \right )=x^2+y^2, \quad x \in \left [ -1, -1 \right ], \quad y \in \left [ -1, 1 \right ]," /></a>
+
+and the output for 8,000,000 points is:
+```
+[aknysh@fishercat build]$ mpirun -n 8 ./monte_carlo 8000000
+[1] Local minimum at X ϵ [-0.75, -0.5], Y ϵ [-1, 1] among 1000000 points:  F(-0.500041, -5.84312e-05) = 0.250041
+[3] Local minimum at X ϵ [-0.25, 0], Y ϵ [-1, 1] among 1000000 points:  F(-0.000420367, -2.48933e-05) = 1.77328e-07
+[5] Local minimum at X ϵ [0.25, 0.5], Y ϵ [-1, 1] among 1000000 points:  F(0.250011, -0.00183207) = 0.0625091
+[0] Local minimum at X ϵ [-1, -0.75], Y ϵ [-1, 1] among 1000000 points:  F(-0.750038, -0.00254893) = 0.562563
+[2] Local minimum at X ϵ [-0.5, -0.25], Y ϵ [-1, 1] among 1000000 points:  F(-0.25006, 0.00440658) = 0.0625495
+[4] Local minimum at X ϵ [0, 0.25], Y ϵ [-1, 1] among 1000000 points:  F(0.000257945, -0.00046741) = 2.85008e-07
+[7] Local minimum at X ϵ [0.75, 1], Y ϵ [-1, 1] among 1000000 points:  F(0.750031, -0.00331392) = 0.562557
+[6] Local minimum at X ϵ [0.5, 0.75], Y ϵ [-1, 1] among 1000000 points:  F(0.500025, 0.00241739) = 0.250031
+----------------------------------------------------------- -- -
+[3] Global minimum at X ϵ [-1,1], Y ϵ [-1,1] among 8000000 points:  F(-0.000420367, -2.48933e-05) = 1.77328e-07
+----------------------------------------------------------- -- -
+    Execution time: 0.103079 [s]
+```
+It is obvious that minimum function value is 0 at (0,0) point and either `[3]`<sup>rd</sup> or `[4]`<sup>th</sup> process had to report global minimum.
+
+![x^2 + y^2](https://user-images.githubusercontent.com/46943028/57400548-b9a85180-71a1-11e9-8411-b9c29c660e4d.PNG)
+
+Figure 2. Plot of sample function.
+
+Change function and domain (Fig.3) to
+
+<a href="https://www.codecogs.com/eqnedit.php?latex=f\left&space;(&space;x,y&space;\right&space;)=0.1x^2y&space;\enskip&space;sin\left&space;(&space;xy&space;\right&space;),&space;\quad&space;x&space;\in&space;\left&space;[&space;1,&space;2&space;\right&space;],&space;\quad&space;y&space;\in&space;\left&space;[&space;-3,&space;-2&space;\right&space;]," target="_blank"><img src="https://latex.codecogs.com/gif.latex?f\left&space;(&space;x,y&space;\right&space;)=0.1x^2y&space;\enskip&space;sin\left&space;(&space;xy&space;\right&space;),&space;\quad&space;x&space;\in&space;\left&space;[&space;1,&space;2&space;\right&space;],&space;\quad&space;y&space;\in&space;\left&space;[&space;-3,&space;-2&space;\right&space;]," title="f\left ( x,y \right )=0.1x^2y \enskip sin\left ( xy \right ), \quad x \in \left [ 1, 2 \right ], \quad y \in \left [ -3, -2 \right ]," /></a>
+
+and run for 60,000,000 points
+```
+[aknysh@fishercat build]$ mpirun -n 6 ./monte_carlo 60000000
+[0] Local minimum at X ϵ [1, 1.16667], Y ϵ [-3, -2] among 10000000 points:  F(1.16666, -2.99986) = -0.143159
+[2] Local minimum at X ϵ [1.33333, 1.5], Y ϵ [-3, -2] among 10000000 points:  F(1.49988, -2.99999) = -0.659676
+[1] Local minimum at X ϵ [1.16667, 1.33333], Y ϵ [-3, -2] among 10000000 points:  F(1.33329, -2.99991) = -0.403508
+[3] Local minimum at X ϵ [1.5, 1.66667], Y ϵ [-3, -2] among 10000000 points:  F(1.66666, -2.94859) = -0.802408
+[4] Local minimum at X ϵ [1.66667, 1.83333], Y ϵ [-3, -2] among 10000000 points:  F(1.83332, -2.67908) = -0.882646
+[5] Local minimum at X ϵ [1.83333, 2], Y ϵ [-3, -2] among 10000000 points:  F(2, -2.45671) = -0.962893
+----------------------------------------------------------- -- -
+[5] Global minimum at X ϵ [1,2], Y ϵ [-3,-2] among 60000000 points:  F(2, -2.45671) = -0.962893
+----------------------------------------------------------- -- -
+    Execution time: 4.63637 [s]
+
+```
+
+![0.1 x^2 y Sin(xy)](https://user-images.githubusercontent.com/46943028/57400734-291e4100-71a2-11e9-912c-f15e148d3a85.PNG)
+
+Figure 3. Plot of the changed function.
+
+The real minimum of the function is around -0.962892 at (2, -2.4566) and expected to be found by `[5]`<sup>th</sup> process. This is exactly what we get.
 
 ## Parallelization
