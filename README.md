@@ -4,9 +4,9 @@ Alexander Knysh, [github repository](https://github.com/alexanderknysh/hpc-final
 
 ## Introduction
 
-Solving of the so-called optimization problems usually requires finding minimum or maximum (generally speaking - extremum) of a specific function of one, two or more independent variables. Sometimes, it is mathematically challenging or even impossible to find neither local nor global extremums of the function analytically. In these cases, we use numerical techniques such as Newton's method, gradient descent, bi- and golden-section searches, etc. Unfortunately, they might be not only computationally expensive but have a hard time finding global extremum. Under such circumstances methods like [Monte Carlo method](https://en.wikipedia.org/wiki/Monte_Carlo_method) can be very useful and efficient, since it is based on different principles.
+Solving of the so-called optimization problems usually requires finding minimum or maximum (extremum, generally speaking) of a specific function of one, two or more independent variables. Sometimes, it is mathematically challenging or even impossible to find neither local nor global extremums of the function analytically. In these cases, we use numerical techniques such as Newton's method, gradient descent, bi- and golden-section searches, etc. Unfortunately, they might be not only computationally expensive but have a hard time finding global extremum. Under such circumstances methods like [Monte Carlo method](https://en.wikipedia.org/wiki/Monte_Carlo_method) can be very useful and efficient, since it is based on different principles.
 
-In this project the C program for finding global minimum of a given real function
+In this project the C program for finding global minimum of a arbitrary real function
 
 <a href="https://www.codecogs.com/eqnedit.php?latex=f\left&space;(&space;x,y&space;\right&space;),&space;\quad&space;x&space;\in&space;\left&space;[&space;x_0,&space;x_1&space;\right&space;],&space;\quad&space;y&space;\in&space;\left&space;[&space;y_0,&space;y_1&space;\right&space;]" target="_blank"><img src="https://latex.codecogs.com/gif.latex?f\left&space;(&space;x,y&space;\right&space;),&space;\quad&space;x&space;\in&space;\left&space;[&space;x_0,&space;x_1&space;\right&space;],&space;\quad&space;y&space;\in&space;\left&space;[&space;y_0,&space;y_1&space;\right&space;]" title="f\left ( x,y \right ), \quad x \in \left [ x_0, x_1 \right ], \quad y \in \left [ y_0, y_1 \right ]" /></a>
 
@@ -14,7 +14,7 @@ with Monte Carlo method is presented. The MPI parallelization is implemented by 
 
 ## Numerical approach
 
-The numerical approach is relatively simple and straightforward. First of all, we divide our rectangular domain along X-axis by several subdomains that correspond a particular MPI process (Fig. 1). Every MPI process generate its own random X- and Y-coordinates and calculate function at this point. Then, obtained value of function is compared to the already assigned initial minimum which is value of function at random point too. The procedure repeats finite number of times prescribed by user. Having the "local" minimums from each subdomain with corresponding coordinates, we can easily extract the global minimum through the communications between MPI processes.
+The numerical approach is relatively simple and straightforward. First of all, we divide our rectangular domain along X-axis by several subdomains that correspond a particular MPI process (Fig. 1). Every MPI process generates its own random X- and Y-coordinates and calculate function at this point. Then, obtained value of function is compared to the already assigned initial minimum which is value of the function at a random point too. The procedure repeats itself finite number of times prescribed by user. Having the "local" minimums from each subdomain with corresponding coordinates, we can easily extract the global minimum through the communications between MPI processes.
 
 ![Problem's domain decomposition with MPI.](https://user-images.githubusercontent.com/46943028/57386810-24966000-7183-11e9-9651-8fad0e178cf2.PNG)
 
@@ -26,7 +26,7 @@ There are three files included in repository: header *random.h* that includes gl
 
 [**random.h**](https://github.com/alexanderknysh/hpc-final-project/blob/master/random.h)
 
-In the header file you can find not only familiar `mprintf()` and `MHERE` structures but also the function to be analized and domain parameters. Parameter's type is `double` but `extern const double` could be a good programming practice too. Capitalization in variable names is forced due to reserved `y0()` and `y1()` functions of *math.h*.  
+In the header file you can find not only familiar `mprintf()` and `MHERE` structures but also the function to be analized and domain parameters. Parameter's type is `double` but `extern const double` could be a good programming practice too. Capitalization in variable names is compelled due to reserved `y0()` and `y1()` functions of *math.h* library.  
 ```c
 #ifndef MPI_DEBUG_H
 #define MPI_DEBUG_H
@@ -72,7 +72,7 @@ double random_real(double low, double high)
 
 [**monte_carlo.c**](https://github.com/alexanderknysh/hpc-final-project/blob/master/monte_carlo.c)
 
-As it has been already mentioned, this code calculates global minimum with corresponding coordinates. Here is a set of libraries/headers included, declarations of MPI's `rank`, `size` and declaration of `tbeg` time variable that will be used to find execution time:
+As it has been already mentioned, the code calculates global minimum with corresponding coordinates. Here is a set of libraries/headers included, declarations of MPI's `rank`, `size` and declaration of `tbeg` time variable that will be used to find execution time:
 ```c
 #include <stdio.h>
 #include <stdlib.h>
@@ -93,7 +93,7 @@ main(int argc, char **argv)
   MPI_Barrier(MPI_COMM_WORLD);
   double tbeg = MPI_Wtime();
 ```
-In order to correctly identify execution time, `MPI_Barrier(MPI_COMM_WORLD)` is placed right before time variable initialization. Next piece of code double check if the number of points we input satisfies general requirenments.
+In order to correctly identify execution time, `MPI_Barrier(MPI_COMM_WORLD)` is placed right before time variable initialization. Next piece of code double-checks if the input number of points satisfies general requirenments.
 ```c
   // Check if input total number of points is correct.
   int n = atoi(argv[1]);
@@ -143,7 +143,7 @@ Now we can seed random number generator and assign our local `local.fmin`, `loca
   local.ymin = random_real(Y0, Y1);
   local.fmin = f(local.xmin, local.ymin);
 ```
-The reason behind using of `struct` is that it is quite convenient to way to put data in `Allreduce()` which will be showm later. So now we just go through the prescribed number of points, find local minimum and print it with all corresponding parameters:
+The reason behind using of `struct` is that it is quite convenient way to put data in `Allreduce()` which will be shown later. So now we just go through the prescribed number of points, find local minimum and print it with all corresponding parameters:
 ```c
   // Find and reassign local minimum values. Print result.
   for (int i = 1; i < n/size; i++) {
@@ -218,7 +218,7 @@ target_link_libraries(monte_carlo PUBLIC MPI::MPI_C)
 
 ## How to run
 
-Make sure that MPI is supported by the compiler you use. In order to run code clone project repository, go in project folder and then build, compile and run:
+Make sure that MPI is supported by the compiler you use. In order to run the code clone project repository, go in project folder and then build, compile and run:
 ```
 $ git clone git@github.com:alexanderknysh/hpc-final-project.git
 $ cd hpc-final-project
