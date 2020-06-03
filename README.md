@@ -1,4 +1,4 @@
-# Final project report
+# MPI Monte Carlo optimization
 
 Alexander Knysh, [github repository](https://github.com/alexanderknysh/hpc-final-project)
 
