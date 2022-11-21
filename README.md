@@ -1,4 +1,4 @@
-# MPI Monte Carlo optimization
+# A parallel Monte Carlo optimization with MPI
 
 Alexander Knysh, [github repository](https://github.com/alexanderknysh/hpc-final-project)
 
